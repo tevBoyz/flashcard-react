@@ -1,5 +1,14 @@
 {
-  "appId": "com.dave.flashcardApp",
-  "appName": "flashcard-react",
-  "webDir": "dist"
+ 
+  "appId": "com.dawittamiru.flashcards",
+  "appName": "Flash Cards",
+  "webDir": "build",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "#ffffff",
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
 }
