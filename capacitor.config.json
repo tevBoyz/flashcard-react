@@ -1,0 +1,5 @@
+{
+  "appId": "com.dave.flashcardApp",
+  "appName": "flashcard-react",
+  "webDir": "dist"
+}

@@ -191,6 +191,7 @@ export default function App() {
             </button>
           )}
           <h1 className="text-3xl font-bold mt-12">Flashcard Generator</h1>
+          <p className='text-gray-500 mt-2'>Flashcard Genius helps you instantly generate study flashcards from PDFs or images using AI. Just upload your material, and get clear, concise question-answer cards ready to review and learn.</p>
         </header>
       </div>
     </div>
