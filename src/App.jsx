@@ -144,7 +144,7 @@ export default function App() {
         )}
 
         {flashcards.length > 0 && !showUploadModal && (
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+          <div className="bg-gray-800 p-6 rounded-xl mt-20 shadow-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Your Flashcards</h2>
               <div className="text-gray-400">
