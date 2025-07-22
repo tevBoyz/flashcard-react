@@ -1,8 +1,7 @@
 {
- 
-  "appId": "com.dawittamiru.flashcards",
-  "appName": "Flash Cards",
-  "webDir": "build",
+  "appId": "com.dave.flashcardApp",
+  "appName": "flashcard-react",
+  "webDir": "dist",
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 3000,
