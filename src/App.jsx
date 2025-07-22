@@ -103,12 +103,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4">
-      <div className="max-w-3xl mx-auto">
-        
+      <div className="max-w-3xl mx-auto mt-20">
 
         {showUploadModal && (
           <form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-xl mb-8 shadow-lg">
-            <div className="mb-4">
+            <div className="mb-3">
               <label htmlFor="file" className="block text-gray-300 mb-2">Select a text file:</label>
               <input
                 type="file"
