@@ -51,11 +51,7 @@ export default function App() {
       }
 
       const data = await response.json();
-
-      // Shuffle the flashcards array before setting state
-      const shuffledFlashcards = shuffleArray([...data.flashcards]);
-      setFlashcards(shuffledFlashcards);
-
+      setFlashcards(data.flashcards);
       setSuccess(data.message);
       setShowUploadModal(false);
 
@@ -64,7 +60,7 @@ export default function App() {
         id: Date.now(),
         date: new Date().toLocaleString(),
         filename: file.name,
-        flashcards: [...shuffledFlashcards]
+        flashcards: [...data.flashcards]
       };
       
       const updatedHistory = [newHistoryItem, ...flashcardHistory].slice(0, 10);
@@ -78,24 +74,14 @@ export default function App() {
     }
   };
 
-const shuffleArray = (array) => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
-
-
-const loadFromHistory = (historyItem) => {
-  const shuffledFlashcards = shuffleArray([...historyItem.flashcards]);
-  setFlashcards(shuffledFlashcards);
-  setCurrentIndex(0);
-  setShowUploadModal(false);
-  setSuccess(`Loaded session from ${historyItem.date}`);
-  setFile(new File([], historyItem.filename, { type: 'text/plain' }));
-};
+  const loadFromHistory = (historyItem) => {
+    setFlashcards(historyItem.flashcards);
+    setCurrentIndex(0);
+    setShowUploadModal(false);
+    setSuccess(`Loaded session from ${historyItem.date}`);
+    // Set a dummy file object with the filename
+    setFile(new File([], historyItem.filename, { type: 'text/plain' }));
+  };
 
   const deleteFromHistory = (id, e) => {
     e.stopPropagation();
