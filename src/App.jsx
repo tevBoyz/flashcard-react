@@ -51,7 +51,11 @@ export default function App() {
       }
 
       const data = await response.json();
-      setFlashcards(data.flashcards);
+
+      // Shuffle the flashcards array before setting state
+      const shuffledFlashcards = shuffleArray([...data.flashcards]);
+      setFlashcards(shuffledFlashcards);
+
       setSuccess(data.message);
       setShowUploadModal(false);
 
@@ -60,7 +64,7 @@ export default function App() {
         id: Date.now(),
         date: new Date().toLocaleString(),
         filename: file.name,
-        flashcards: [...data.flashcards]
+        flashcards: [...shuffledFlashcards]
       };
       
       const updatedHistory = [newHistoryItem, ...flashcardHistory].slice(0, 10);
@@ -74,14 +78,24 @@ export default function App() {
     }
   };
 
-  const loadFromHistory = (historyItem) => {
-    setFlashcards(historyItem.flashcards);
-    setCurrentIndex(0);
-    setShowUploadModal(false);
-    setSuccess(`Loaded session from ${historyItem.date}`);
-    // Set a dummy file object with the filename
-    setFile(new File([], historyItem.filename, { type: 'text/plain' }));
-  };
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+
+const loadFromHistory = (historyItem) => {
+  const shuffledFlashcards = shuffleArray([...historyItem.flashcards]);
+  setFlashcards(shuffledFlashcards);
+  setCurrentIndex(0);
+  setShowUploadModal(false);
+  setSuccess(`Loaded session from ${historyItem.date}`);
+  setFile(new File([], historyItem.filename, { type: 'text/plain' }));
+};
 
   const deleteFromHistory = (id, e) => {
     e.stopPropagation();
@@ -103,7 +117,7 @@ export default function App() {
         </div>
       )}
 
-      <div className="flex-1 p-4 max-w-6xl mx-auto w-full">
+      <div className="flex-1 p-4 max-w-6xl mx-auto w-full mt-10">
         <header className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Flashcard Generator</h1>
           <p className='text-amber-100 text-[12px] font-extralight'>Create flashcards from your notes.</p>
