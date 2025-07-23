@@ -1,67 +1,30 @@
-import { useState, useRef, useEffect } from 'react';
-import Flashcard from './components/FlashCard';
+import { useState, useEffect } from 'react';
+import { ClipLoader } from 'react-spinners';
+import Flashcard from './components/Flashcard';
+import { FiChevronDown, FiChevronUp, FiClock, FiX, FiRotateCw } from 'react-icons/fi';
 
 export default function App() {
-  // State declarations
   const [file, setFile] = useState(null);
-  const [flashcards, setFlashcards] = useState([]); // Make sure this is defined
+  const [flashcards, setFlashcards] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showUploadModal, setShowUploadModal] = useState(true);
-  const [direction, setDirection] = useState('');
+  const [showHistory, setShowHistory] = useState(false);
+  const [flashcardHistory, setFlashcardHistory] = useState([]);
 
-  useEffect(() => {
-    if(success){
-      const timer = setTimeout(()=> {
-        setSuccess (null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  })
-  
-  // Refs
-  const touchStartX = useRef(null);
-  const flashcardRef = useRef(null);
-
-  // Navigation handlers
-  const handleNext = () => {
-    setDirection('slide-out-left');
-    setTimeout(() => {
-      setCurrentIndex(prev => (prev === flashcards.length - 1 ? 0 : prev + 1));
-      setDirection('slide-in-right');
-    }, 250);
-  };
-
-  const handlePrev = () => {
-    setDirection('slide-out-right');
-    setTimeout(() => {
-      setCurrentIndex(prev => (prev === 0 ? flashcards.length - 1 : prev - 1));
-      setDirection('slide-in-left');
-    }, 250);
-  };
-
-  // Touch event handlers
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e) => {
-    if (!touchStartX.current || !flashcards.length) return;
-    const touchEndX = e.touches[0].clientX;
-    const difference = touchStartX.current - touchEndX;
-    
-    if (difference > 50) handleNext();
-    else if (difference < -50) handlePrev();
-    
-    touchStartX.current = null;
-  };
-
-  // File handlers
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
+
+  // Load history from localStorage on mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('flashcardHistory');
+    if (savedHistory) {
+      setFlashcardHistory(JSON.parse(savedHistory));
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,18 +41,32 @@ export default function App() {
       const response = await fetch(import.meta.env.VITE_API_URL, {
         method: 'POST',
         headers: {
-          'x-api-key': import.meta.env.VITE_API_KEY
+          'x-api-key': import.meta.env.VITE_API_KEY,
         },
         body: formData
       });
 
-      if (!response.ok) throw new Error('Failed to upload file');
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
 
       const data = await response.json();
-      setFlashcards(data.flashcards || []);
+      setFlashcards(data.flashcards);
       setSuccess(data.message);
-      setCurrentIndex(0);
       setShowUploadModal(false);
+
+      // Add to history only after successful response
+      const newHistoryItem = {
+        id: Date.now(),
+        date: new Date().toLocaleString(),
+        filename: file.name,
+        flashcards: [...data.flashcards]
+      };
+      
+      const updatedHistory = [newHistoryItem, ...flashcardHistory].slice(0, 10);
+      setFlashcardHistory(updatedHistory);
+      localStorage.setItem('flashcardHistory', JSON.stringify(updatedHistory));
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -97,22 +74,57 @@ export default function App() {
     }
   };
 
-  const showUploadForm = () => {
-    setShowUploadModal(true);
+  const loadFromHistory = (historyItem) => {
+    setFlashcards(historyItem.flashcards);
+    setCurrentIndex(0);
+    setShowUploadModal(false);
+    setSuccess(`Loaded session from ${historyItem.date}`);
+    // Set a dummy file object with the filename
+    setFile(new File([], historyItem.filename, { type: 'text/plain' }));
+  };
+
+  const deleteFromHistory = (id, e) => {
+    e.stopPropagation();
+    const updatedHistory = flashcardHistory.filter(item => item.id !== id);
+    setFlashcardHistory(updatedHistory);
+    localStorage.setItem('flashcardHistory', JSON.stringify(updatedHistory));
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-4">
-      <div className="max-w-3xl mx-auto mt-20">
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col relative">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-8 rounded-xl shadow-2xl flex flex-col items-center">
+            <ClipLoader color="#3B82F6" size={50} />
+            <p className="mt-4 text-xl text-gray-300">Processing your file...</p>
+            <p className="text-gray-400 mt-2">This may take a moment</p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 p-4 max-w-6xl mx-auto w-full">
+        <header className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">Flashcard Generator</h1>
+          <p className='text-amber-100 text-[12px] font-extralight'>Create flashcards from your notes.</p>
+          {!showUploadModal && (
+            <button 
+              onClick={() => setShowUploadModal(true)}
+              className="mt-4 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-2 mx-auto"
+            >
+              <FiRotateCw /> Upload New Flashcards
+            </button>
+          )}
+        </header>
 
         {showUploadModal && (
           <form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-xl mb-8 shadow-lg">
-            <div className="mb-3">
-              <label htmlFor="file" className="block text-gray-300 mb-2">Select a text file:</label>
+            <div className="mb-4">
+              <label htmlFor="file" className="block text-gray-300 mb-2">Select a file: (txt, pdf, docx, pptx)</label>
               <input
                 type="file"
                 id="file"
-                accept=".txt"
+                accept=".txt,.pdf,.docx,.pptx"
                 onChange={handleFileChange}
                 className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-gray-300"
                 required
@@ -121,11 +133,9 @@ export default function App() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-2 px-4 rounded font-medium ${
-                isLoading ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-              }`}
+              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded font-medium"
             >
-              {isLoading ? 'Processing...' : 'Generate Flashcards'}
+              Generate Flashcards
             </button>
           </form>
         )}
@@ -137,41 +147,40 @@ export default function App() {
         )}
 
         {success && !showUploadModal && (
-          <div className="bg-green-900/50 border border-green-700 text-green-300 p-4 rounded-xl mb-8">
+          <div className="bg-green-900/50 border border-green-700 text-green-300 p-4 rounded-xl animate-fade">
             {success}
           </div>
         )}
 
         {flashcards.length > 0 && !showUploadModal && (
-          <div className="bg-gray-800 p-6 rounded-xl mt-20 shadow-lg">
+          <div className="bg-gray-800 rounded-xl shadow-lg p-6 mb-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Your Flashcards</h2>
+              <div className="text-gray-300 font-medium truncate max-w-[50%]">
+                {file?.name || flashcardHistory.find(h => 
+                  JSON.stringify(h.flashcards) === JSON.stringify(flashcards))?.filename}
+              </div>
               <div className="text-gray-400">
                 {currentIndex + 1} / {flashcards.length}
               </div>
             </div>
 
-            <div 
-              className="h-64 mb-6 relative"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              ref={flashcardRef}
-            >
-              <Flashcard 
-                flashcard={flashcards[currentIndex]} 
-                direction={direction}
-              />
+            <div className="h-96 mb-6">
+              <Flashcard flashcard={flashcards[currentIndex]} />
             </div>
 
             <div className="flex justify-between">
               <button
-                onClick={handlePrev}
+                onClick={() => {
+                  setCurrentIndex(prev => (prev === 0 ? flashcards.length - 1 : prev - 1));
+                }}
                 className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded"
               >
                 Previous
               </button>
               <button
-                onClick={handleNext}
+                onClick={() => {
+                  setCurrentIndex(prev => (prev === flashcards.length - 1 ? 0 : prev + 1));
+                }}
                 className="py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded"
               >
                 Next
@@ -179,20 +188,52 @@ export default function App() {
             </div>
           </div>
         )}
+      </div>
 
-        <header className="text-center mb-8">
-          {!showUploadModal && (
-            <button 
-              onClick={showUploadForm}
-              className="mt-4 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded"
-            >
-              Upload New Flashcards
-            </button>
-          )}
-          <h1 className="text-3xl font-bold mt-12">Flashcard Generator</h1>
-          <p className='text-gray-500 mt-2'>Flashcard Genius helps you instantly generate study flashcards from PDFs or images using AI. Just upload your material, and get clear, concise question-answer cards ready to review and learn.</p>
-          <p className='text-yellow-300'>Please upload txt files only. Other formats comming soon...</p>
-        </header>
+      {/* History Panel - Always at bottom */}
+      <div className="bg-gray-800 border-t border-gray-700">
+        <div 
+          className="flex items-center justify-between cursor-pointer p-4"
+          onClick={() => setShowHistory(!showHistory)}
+        >
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <FiClock className="text-blue-400" /> History
+          </h2>
+          <span className="text-gray-400">
+            {showHistory ? <FiChevronDown /> : <FiChevronUp />}
+          </span>
+        </div>
+        
+        {showHistory && (
+          <div className="p-4 max-h-64 overflow-y-auto">
+            {flashcardHistory.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {flashcardHistory.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-gray-700 p-3 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors relative group"
+                    onClick={() => loadFromHistory(item)}
+                  >
+                    <div className="font-medium truncate">{item.filename}</div>
+                    <div className="text-sm text-gray-400">
+                      {item.date} • {item.flashcards.length} cards
+                    </div>
+                    <button
+                      onClick={(e) => deleteFromHistory(item.id, e)}
+                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <FiX size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-gray-400 text-center py-4">
+                No history yet
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
