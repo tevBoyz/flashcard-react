@@ -1,7 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function FlashCard({ flashcard }) {
+export default function FlashCard({ flashcard, onFlip }) {
   const [isFlipped, setIsFlipped] = useState(false);
+
+  // Sync with parent component's flip state
+  useEffect(() => {
+    setIsFlipped(flashcard.showAnswer || false);
+  }, [flashcard.showAnswer]);
+
+  const handleFlip = () => {
+    const newState = !isFlipped;
+    setIsFlipped(newState);
+    if (onFlip) onFlip(newState);
+  };
 
   return (
     <div className="w-full h-full perspective-1000">
@@ -9,7 +20,7 @@ export default function FlashCard({ flashcard }) {
         className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
           isFlipped ? 'rotate-y-180' : ''
         }`}
-        onClick={() => setIsFlipped(!isFlipped)}
+        onClick={handleFlip}
       >
         <div className="absolute w-full h-full backface-hidden bg-gray-800 rounded-xl p-6 flex flex-col justify-center items-center border-2 border-gray-700">
           <h3 className="text-2xl font-bold text-center mb-4">{flashcard.question}</h3>

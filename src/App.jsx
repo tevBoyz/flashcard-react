@@ -47,11 +47,11 @@ export default function App() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload file');
+        throw new Error('Failed to upload file/Backend overloaded, please try again later');
       }
 
       const data = await response.json();
-      setFlashcards(data.flashcards);
+      setFlashcards(data.flashcards.map(f => ({ ...f, showAnswer: false }))); // Initialize with showAnswer: false
       setSuccess(data.message);
       setShowUploadModal(false);
 
@@ -75,11 +75,10 @@ export default function App() {
   };
 
   const loadFromHistory = (historyItem) => {
-    setFlashcards(historyItem.flashcards);
+    setFlashcards(historyItem.flashcards.map(f => ({ ...f, showAnswer: false }))); // Initialize with showAnswer: false
     setCurrentIndex(0);
     setShowUploadModal(false);
     setSuccess(`Loaded session from ${historyItem.date}`);
-    // Set a dummy file object with the filename
     setFile(new File([], historyItem.filename, { type: 'text/plain' }));
   };
 
@@ -88,6 +87,28 @@ export default function App() {
     const updatedHistory = flashcardHistory.filter(item => item.id !== id);
     setFlashcardHistory(updatedHistory);
     localStorage.setItem('flashcardHistory', JSON.stringify(updatedHistory));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex(prev => {
+      const nextIndex = prev === flashcards.length - 1 ? 0 : prev + 1;
+      // Ensure the next card shows question side
+      const updatedFlashcards = [...flashcards];
+      updatedFlashcards[nextIndex].showAnswer = false;
+      setFlashcards(updatedFlashcards);
+      return nextIndex;
+    });
+  };
+
+  const handlePrevious = () => {
+    setCurrentIndex(prev => {
+      const prevIndex = prev === 0 ? flashcards.length - 1 : prev - 1;
+      // Ensure the previous card shows question side
+      const updatedFlashcards = [...flashcards];
+      updatedFlashcards[prevIndex].showAnswer = false;
+      setFlashcards(updatedFlashcards);
+      return prevIndex;
+    });
   };
 
   return (
@@ -165,22 +186,25 @@ export default function App() {
             </div>
 
             <div className="h-96 mb-6">
-              <FlashCard flashcard={flashcards[currentIndex]} />
+              <FlashCard 
+                flashcard={flashcards[currentIndex]} 
+                onFlip={(isFlipped) => {
+                  const updatedFlashcards = [...flashcards];
+                  updatedFlashcards[currentIndex].showAnswer = isFlipped;
+                  setFlashcards(updatedFlashcards);
+                }}
+              />
             </div>
 
             <div className="flex justify-between">
               <button
-                onClick={() => {
-                  setCurrentIndex(prev => (prev === 0 ? flashcards.length - 1 : prev - 1));
-                }}
+                onClick={handlePrevious}
                 className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded"
               >
                 Previous
               </button>
               <button
-                onClick={() => {
-                  setCurrentIndex(prev => (prev === flashcards.length - 1 ? 0 : prev + 1));
-                }}
+                onClick={handleNext}
                 className="py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded"
               >
                 Next
