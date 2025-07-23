@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ClipLoader } from 'react-spinners';
-import Flashcard from './components/Flashcard';
+import FlashCard from './components/FlashCard';
 import { FiChevronDown, FiChevronUp, FiClock, FiX, FiRotateCw } from 'react-icons/fi';
 
 export default function App() {
@@ -165,7 +165,7 @@ export default function App() {
             </div>
 
             <div className="h-96 mb-6">
-              <Flashcard flashcard={flashcards[currentIndex]} />
+              <FlashCard flashcard={flashcards[currentIndex]} />
             </div>
 
             <div className="flex justify-between">

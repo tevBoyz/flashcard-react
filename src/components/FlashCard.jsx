@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function Flashcard({ flashcard }) {
+export default function FlashCard({ flashcard }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
