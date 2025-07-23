@@ -244,7 +244,7 @@ export default function App() {
                     </div>
                     <button
                       onClick={(e) => deleteFromHistory(item.id, e)}
-                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-400 opacity-100 transition-opacity"
                     >
                       <FiX size={16} />
                     </button>
