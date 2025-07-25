@@ -15,9 +15,40 @@ export default function App() {
   const [flashcardHistory, setFlashcardHistory] = useState([]);
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
+  const selectedFile = e.target.files[0];
+  
+  if (!selectedFile) return;
+  
+  // 3MB size limit
+  const maxSize = 3 * 1024 * 1024; // 3MB in bytes
+  if (selectedFile.size > maxSize) {
+    setError('File size exceeds 3MB limit. Please choose a smaller file.');
+    e.target.value = ''; // Clear the file input
+    setFile(null);
+    return;
+  }
+  
+  // Allowed file types
+  const allowedTypes = [
+    'text/plain', // .txt
+    'application/pdf', // .pdf
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation' // .pptx
+  ];
+  
+  // Check file type
+  if (!allowedTypes.includes(selectedFile.type) && 
+      !selectedFile.name.match(/\.(txt|pdf|docx|pptx)$/i)) {
+    setError('Only .txt, .pdf, .docx, and .pptx files are allowed.');
+    e.target.value = '';
+    setFile(null);
+    return;
+  }
+  
+  // If all checks pass
+  setFile(selectedFile);
+  setError(null); // Clear any previous errors
+};
   // Load history from localStorage on mount
   useEffect(() => {
     const savedHistory = localStorage.getItem('flashcardHistory');
@@ -164,6 +195,12 @@ export default function App() {
         {error && (
           <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-xl mb-8">
             {error}
+            {error.includes('allowed') && (
+              <p className="text-sm mt-2">Supported formats: .txt, .pdf, .docx, .pptx</p>
+            )}
+            {error.includes('3MB') && (
+              <p className="text-sm mt-2">Maximum allowed file size is 3MB.</p>
+            )}
           </div>
         )}
 
