@@ -82,6 +82,7 @@ export default function App() {
       }
 
       const data = await response.json();
+      
       setFlashcards(data.flashcards.map(f => ({ ...f, showAnswer: false }))); // Initialize with showAnswer: false
       setSuccess(data.message);
       setShowUploadModal(false);
@@ -143,8 +144,14 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col relative">
+    <div className="min-h-screen text-gray-100 flex flex-col relative ">
       {/* Loading Overlay */}
+      <img
+    src="/images/abrehot-back-image.webp"
+    alt="background"
+    className="absolute inset-0 w-full h-full object-cover -z-10"
+    loading="lazy"
+  />
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-8 rounded-xl shadow-2xl flex flex-col items-center">
@@ -156,18 +163,19 @@ export default function App() {
       )}
 
       <div className="flex-1 p-4 max-w-6xl mx-auto w-full mt-10">
-        <header className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Flashcard Generator</h1>
-          <p className='text-amber-100 text-[12px] font-extralight'>Create flashcards from your notes.</p>
-          {!showUploadModal && (
-            <button 
-              onClick={() => setShowUploadModal(true)}
-              className="mt-4 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-2 mx-auto"
-            >
-              <FiRotateCw /> Upload New Flashcards
-            </button>
-          )}
-        </header>
+        <header className="text-center mb-8 bg-black/50 p-6 rounded-xl backdrop-blur-sm shadow-lg max-w-xl mx-auto">
+  <h1 className="text-3xl font-bold mb-2 text-white">Flashcard Generator</h1>
+  <p className='text-amber-100 text-[12px] font-extralight'>Create flashcards from your notes.</p>
+  {!showUploadModal && (
+    <button 
+      onClick={() => setShowUploadModal(true)}
+      className="mt-4 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-2 mx-auto"
+    >
+      <FiRotateCw /> Upload New Flashcards
+    </button>
+  )}
+</header>
+
 
         {showUploadModal && (
           <form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-xl mb-8 shadow-lg">
