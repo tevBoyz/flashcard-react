@@ -157,7 +157,7 @@ export default function App() {
           <div className="bg-gray-800 p-8 rounded-xl shadow-2xl flex flex-col items-center">
             <ClipLoader color="#3B82F6" size={50} />
             <p className="mt-4 text-xl text-gray-300">Processing your file...</p>
-            <p className="text-gray-400 mt-2">This may take a moment</p>
+            <p className="text-gray-400 mt-2">This may take a moment, please wait...</p>
           </div>
         </div>
       )}
