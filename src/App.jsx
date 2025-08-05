@@ -201,7 +201,7 @@ export default function App() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded font-medium"
+              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded font-medium cursor-pointer"
             >
               Generate Flashcards
             </button>
