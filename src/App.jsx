@@ -171,7 +171,7 @@ export default function App() {
       onClick={() => setShowUploadModal(true)}
       className="mt-4 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-2 mx-auto"
     >
-      <FiRotateCw /> Upload New Flashcards
+      <FiRotateCw /> Upload New Files
     </button>
   )}
 </header>
