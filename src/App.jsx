@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useRef } from 'react';
 import { ClipLoader } from 'react-spinners';
 import FlashCard from './components/FlashCard';
 import { FiChevronDown, FiChevronUp, FiClock, FiX, FiRotateCw } from 'react-icons/fi';
@@ -13,6 +13,7 @@ export default function App() {
   const [showUploadModal, setShowUploadModal] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [flashcardHistory, setFlashcardHistory] = useState([]);
+  const historyRef = useRef(null);
 
   const handleFileChange = (e) => {
   const selectedFile = e.target.files[0];
@@ -56,6 +57,13 @@ export default function App() {
       setFlashcardHistory(JSON.parse(savedHistory));
     }
   }, []);
+
+  useEffect(() => {
+  if (showHistory && historyRef.current) {
+    historyRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}, [showHistory]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -274,7 +282,7 @@ export default function App() {
         </div>
         
         {showHistory && (
-          <div className="p-4 max-h-64 overflow-y-auto">
+          <div ref={historyRef} className="p-4 max-h-64 overflow-y-auto">
             {flashcardHistory.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {flashcardHistory.map((item) => (
@@ -289,7 +297,7 @@ export default function App() {
                     </div>
                     <button
                       onClick={(e) => deleteFromHistory(item.id, e)}
-                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-400 opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 p-1 text-gray-400 cursor-pointer hover:text-red-400 opacity-100 transition-opacity"
                     >
                       <FiX size={16} />
                     </button>
